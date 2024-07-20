@@ -1,0 +1,16 @@
+---
+- hosts: pi3
+  become: yes
+  vars_files:
+    - vault.yml
+    
+  tasks:
+    - name: Print connection details
+      debug:
+        msg:
+          - "User: {{ ansible_user }}"
+          - "Private Key: {{ ansible_ssh_private_key_file }}"
+          - "Become Pass: {{ ansible_become_password }}"
+
+    - name: Test connection
+      ping:

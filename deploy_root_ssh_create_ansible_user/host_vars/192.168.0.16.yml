@@ -1,0 +1,5 @@
+---
+ansible_port: 22
+ansible_become_password: "{{ password }}" #set in the vault
+ansible_ssh_pass: "{{ password }}"
+...

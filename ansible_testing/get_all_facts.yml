@@ -1,0 +1,19 @@
+---
+- name: Gather and print all facts for pi3
+  hosts: pi3
+
+  become: true
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Test connection
+      ansible.builtin.ping:
+
+    - name: Gather all facts
+      ansible.builtin.setup:
+
+    - name: Print all gathered facts
+      ansible.builtin.debug:
+        var: ansible_facts
+...

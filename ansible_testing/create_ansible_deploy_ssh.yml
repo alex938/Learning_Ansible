@@ -1,0 +1,68 @@
+---
+- name: Setup Ansible user on servers
+  hosts: servers
+  become: true
+  vars_files:
+    - vault.yml
+
+  tasks:
+    - name: Check if ansible user exists
+      getent:
+        database: passwd
+        key: ansible
+      register: ansible_user_exists
+      ignore_errors: yes
+
+    - name: Create ansible user if not present
+      user:
+        name: ansible
+        comment: "Ansible User"
+        shell: /bin/bash
+        create_home: yes
+        state: present
+      when: ansible_user_exists is failed
+      notify: ansible user created
+
+    - name: Create .ssh directory
+      file:
+        path: /home/ansible/.ssh
+        state: directory
+        owner: ansible
+        group: ansible
+        mode: 0700
+      notify: created ssh dir
+
+    - name: Copy the existing public key to the managed nodes
+      copy:
+        src: "{{ ansible_pub_path }}"
+        dest: /home/ansible/.ssh/authorized_keys
+        owner: ansible
+        group: ansible
+        mode: '0600'
+      notify: copy ansible public
+
+    - name: Ensure ansible user can use sudo without password
+      lineinfile:
+        path: /etc/sudoers.d/ansible
+        state: present
+        create: true
+        line: 'ansible ALL=(ALL) NOPASSWD: ALL'
+        mode: '0440'
+      notify: sudoers
+
+  handlers:
+    - name: ansible user created
+      debug:
+        msg: ansible user created on {{ hostvars[inventory_hostname]['ansible_hostname'] }}
+    - name: created ssh dir
+      debug:
+        msg: created ansible ssh dir on {{ hostvars[inventory_hostname]['ansible_hostname'] }}
+    - name: copy ansible public
+      debug:
+        msg: copied ansible public key to {{ hostvars[inventory_hostname]['ansible_hostname'] }}
+    - name: created ssh dir
+      debug:
+        msg: created ansible ssh dir on {{ hostvars[inventory_hostname]['ansible_hostname'] }}
+    - name: sudoers
+      debug:
+        msg: ansible user added to sudoers {{ hostvars[inventory_hostname]['ansible_hostname'] }}

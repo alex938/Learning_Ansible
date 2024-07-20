@@ -1,0 +1,8 @@
+[control]
+alex ansible_connection=local
+
+[pi3]
+192.168.0.16 ansible_user=alex
+
+[servers:children]
+pi3
